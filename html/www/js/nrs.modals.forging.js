@@ -60,7 +60,7 @@ var NRS = (function(NRS, $) {
 	var forgingIndicator = $("#forging_indicator");
 	forgingIndicator.click(function(e) {
 		e.preventDefault();
-
+        var currentChainId = NRS.getActiveChainId();
         if (NRS.state.isLightClient) {
             $.growl($.t("error_forging_light_client"), {
                 "type": "danger"
@@ -77,7 +77,7 @@ var NRS = (function(NRS, $) {
 			$.growl($.t("error_forging_no_public_key"), {
 				"type": "danger"
 			});
-		} else if (NRS.accountInfo.effectiveBalanceNXT == 0) {
+		} else if (NRS.accountInfo.effectiveBalanceFXT == 0) {
 			if (NRS.lastBlockHeight >= NRS.accountInfo.currentLeasingHeightFrom && NRS.lastBlockHeight <= NRS.accountInfo.currentLeasingHeightTo) {
 				$.growl($.t("error_forging_lease"), {
 					"type": "danger"
@@ -87,12 +87,20 @@ var NRS = (function(NRS, $) {
 					"type": "danger"
 				});
 			}
-		} else if (NRS.isAccountForging) {
-			$("#stop_forging_modal").modal("show");
-		} else {
-			$("#start_forging_modal").modal("show");
-		}
-	});
+		} else { 
+            showForgingModal();
+        }
+    });
+    
+    function showForgingModal() {
+        var $modal;
+        if (NRS.isAccountForging) {
+            $modal = $("#stop_forging_modal");
+        } else {
+            $modal = $("#start_forging_modal");
+        }
+        $modal.modal("show");
+    }
 
 	forgingIndicator.hover(
 		function() {
@@ -103,7 +111,7 @@ var NRS = (function(NRS, $) {
     NRS.getForgingTooltip = function(data) {
         if (!data || data.account == NRS.accountInfo.account) {
             NRS.isAccountForging = true;
-            return $.t("forging_tooltip", {"balance": NRS.accountInfo.effectiveBalanceNXT, "symbol": NRS.constants.COIN_SYMBOL});
+            return $.t("forging_tooltip", {"balance": NRS.accountInfo.effectiveBalanceFXT});
         }
         return $.t("forging_another_account_tooltip", {"accountRS": data.accountRS });
     };
@@ -137,7 +145,7 @@ var NRS = (function(NRS, $) {
         } else if (NRS.isLeased) {
             status = NRS.constants.NOT_FORGING;
             tooltip = $.t("error_forging_lease");
-        } else if (NRS.accountInfo.effectiveBalanceNXT == 0) {
+        } else if (NRS.accountInfo.effectiveBalanceFXT == 0) {
             status = NRS.constants.NOT_FORGING;
             tooltip = $.t("error_forging_effective_balance");
         } else if (NRS.downloadingBlockchain) {
